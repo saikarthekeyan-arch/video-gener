@@ -1,11 +1,9 @@
-const { FFmpeg } = FFmpegWASM;
-const { fetchFile } = FFmpegUtil;
+const { createFFmpeg, fetchFile } = FFmpeg;
 
 let ffmpeg = null;
 let uploadedImages = [];
 let uploadedVideos = [];
 
-// DOM Elements
 const loadingScreen = document.getElementById('loading-screen');
 const appContent = document.getElementById('app-content');
 const progressSection = document.getElementById('progress-section');
@@ -16,38 +14,24 @@ const outputSection = document.getElementById('output-section');
 const outputVideo = document.getElementById('output-video');
 const downloadBtn = document.getElementById('download-btn');
 
-// Initialize FFmpeg
 async function initFFmpeg() {
-    ffmpeg = new FFmpeg();
-
-    ffmpeg.on('log', ({ message }) => {
-        console.log('FFmpeg:', message);
-        progressLog.textContent = message;
+    ffmpeg = createFFmpeg({
+        log: true,
+        progress: ({ ratio }) => {
+            const percent = Math.round(ratio * 100);
+            if (percent > 0 && percent <= 100) {
+                progressFill.style.width = `${percent}%`;
+                progressText.textContent = `${percent}%`;
+            }
+        }
     });
 
-    ffmpeg.on('progress', ({ progress, time }) => {
-        const percent = Math.round(progress * 100);
-        progressFill.style.width = `${percent}%`;
-        progressText.textContent = `${percent}%`;
-    });
-
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-    await ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-    });
+    await ffmpeg.load();
 
     loadingScreen.classList.add('hidden');
     appContent.classList.remove('hidden');
 }
 
-async function toBlobURL(url, mimeType) {
-    const buf = await (await fetch(url)).arrayBuffer();
-    const blob = new Blob([buf], { type: mimeType });
-    return URL.createObjectURL(blob);
-}
-
-// Tab switching
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -58,12 +42,12 @@ document.querySelectorAll('.tab').forEach(tab => {
     });
 });
 
-// Show/hide progress and output
 function showProgress() {
     progressSection.classList.remove('hidden');
     outputSection.classList.add('hidden');
     progressFill.style.width = '0%';
     progressText.textContent = '0%';
+    progressLog.textContent = '';
 }
 
 function hideProgress() {
@@ -81,7 +65,6 @@ function hideOutput() {
     outputSection.classList.add('hidden');
 }
 
-// ====== TEXT TO VIDEO ======
 async function generateTextVideo() {
     const text = document.getElementById('text-content').value.trim();
     if (!text) {
@@ -101,19 +84,15 @@ async function generateTextVideo() {
         const fps = 30;
         const totalFrames = duration * fps;
 
-        // Create frames using canvas
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
 
-        // Write frames to disk
         for (let i = 0; i < totalFrames; i++) {
-            // Draw background
             ctx.fillStyle = bgColor;
             ctx.fillRect(0, 0, width, height);
 
-            // Draw text with wrapping
             ctx.fillStyle = textColor;
             ctx.font = `bold ${fontSize}px Arial`;
             ctx.textAlign = 'center';
@@ -127,10 +106,9 @@ async function generateTextVideo() {
                 ctx.fillText(line, width / 2, startY + idx * lineHeight);
             });
 
-            // Convert to blob and write to FFmpeg FS
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
             const frameData = await fetchFile(blob);
-            await ffmpeg.writeFile(`frame_${String(i).padStart(6, '0')}.jpg`, frameData);
+            await ffmpeg.FS('writeFile', `frame_${String(i).padStart(6, '0')}.jpg`, frameData);
 
             if (i % 30 === 0) {
                 progressFill.style.width = `${Math.round((i / totalFrames) * 50)}%`;
@@ -140,28 +118,24 @@ async function generateTextVideo() {
 
         progressText.textContent = 'Encoding video...';
 
-        // Encode frames to video
-        await ffmpeg.exec([
+        await ffmpeg.run(
             '-framerate', String(fps),
             '-i', 'frame_%06d.jpg',
             '-c:v', 'libx264',
             '-pix_fmt', 'yuv420p',
             '-preset', 'ultrafast',
             'output.mp4'
-        ]);
+        );
 
-        // Read output file
-        const data = await ffmpeg.readFile('output.mp4');
+        const data = ffmpeg.FS('readFile', 'output.mp4');
         const blob = new Blob([data.buffer], { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
 
         showOutput(url, 'text-video.mp4');
 
-        // Cleanup
         for (let i = 0; i < totalFrames; i++) {
-            await ffmpeg.deleteFile(`frame_${String(i).padStart(6, '0')}.jpg`).catch(() => {});
+            ffmpeg.FS('unlink', `frame_${String(i).padStart(6, '0')}.jpg`);
         }
-        await ffmpeg.deleteFile('output.mp4').catch(() => {});
 
     } catch (error) {
         console.error('Error:', error);
@@ -194,7 +168,6 @@ function wrapText(ctx, text, maxWidth) {
     return lines;
 }
 
-// ====== IMAGE SLIDESHOW ======
 document.getElementById('image-upload').addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
     const preview = document.getElementById('image-preview');
@@ -210,7 +183,7 @@ document.getElementById('image-upload').addEventListener('change', (e) => {
             div.id = `img-${id}`;
             div.innerHTML = `
                 <img src="${ev.target.result}" alt="Preview">
-                <button class="remove" onclick="removeImage(${id})">×</button>
+                <button class="remove" onclick="removeImage(${id})">x</button>
             `;
             preview.appendChild(div);
         };
@@ -241,11 +214,8 @@ async function generateSlideshow() {
         const fps = 30;
         const framesPerSlide = slideDuration * fps;
 
-        // Process each image
         for (let i = 0; i < uploadedImages.length; i++) {
             const img = await loadImage(uploadedImages[i].file);
-
-            // Create canvas for this slide
             const canvas = document.createElement('canvas');
             canvas.width = width;
             canvas.height = height;
@@ -255,14 +225,12 @@ async function generateSlideshow() {
                 ctx.fillStyle = '#000000';
                 ctx.fillRect(0, 0, width, height);
 
-                // Draw image scaled to fit
                 const scale = Math.min(width / img.width, height / img.height);
                 const drawWidth = img.width * scale;
                 const drawHeight = img.height * scale;
                 const x = (width - drawWidth) / 2;
                 const y = (height - drawHeight) / 2;
 
-                // Apply fade transition if enabled
                 if (transition === 'fade' && f < 10) {
                     ctx.globalAlpha = f / 10;
                 } else if (transition === 'fade' && f > framesPerSlide - 10 && uploadedImages.length > 1) {
@@ -276,7 +244,7 @@ async function generateSlideshow() {
 
                 const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
                 const frameNum = i * framesPerSlide + f;
-                await ffmpeg.writeFile(`slide_${String(frameNum).padStart(6, '0')}.jpg`, await fetchFile(blob));
+                await ffmpeg.FS('writeFile', `slide_${String(frameNum).padStart(6, '0')}.jpg`, await fetchFile(blob));
 
                 const totalFrames = uploadedImages.length * framesPerSlide;
                 if (frameNum % 30 === 0) {
@@ -290,26 +258,24 @@ async function generateSlideshow() {
 
         const totalFrames = uploadedImages.length * framesPerSlide;
 
-        await ffmpeg.exec([
+        await ffmpeg.run(
             '-framerate', String(fps),
             '-i', 'slide_%06d.jpg',
             '-c:v', 'libx264',
             '-pix_fmt', 'yuv420p',
             '-preset', 'ultrafast',
             'slideshow.mp4'
-        ]);
+        );
 
-        const data = await ffmpeg.readFile('slideshow.mp4');
+        const data = ffmpeg.FS('readFile', 'slideshow.mp4');
         const blob = new Blob([data.buffer], { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
 
         showOutput(url, 'slideshow.mp4');
 
-        // Cleanup
         for (let i = 0; i < totalFrames; i++) {
-            await ffmpeg.deleteFile(`slide_${String(i).padStart(6, '0')}.jpg`).catch(() => {});
+            ffmpeg.FS('unlink', `slide_${String(i).padStart(6, '0')}.jpg`);
         }
-        await ffmpeg.deleteFile('slideshow.mp4').catch(() => {});
 
     } catch (error) {
         console.error('Error:', error);
@@ -328,7 +294,6 @@ function loadImage(file) {
     });
 }
 
-// ====== MERGE VIDEOS ======
 document.getElementById('video-upload').addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
     const preview = document.getElementById('video-preview');
@@ -343,7 +308,7 @@ document.getElementById('video-upload').addEventListener('change', (e) => {
         div.id = `vid-${id}`;
         div.innerHTML = `
             <video src="${url}"></video>
-            <button class="remove" onclick="removeVideo(${id})">×</button>
+            <button class="remove" onclick="removeVideo(${id})">x</button>
         `;
         preview.appendChild(div);
     });
@@ -366,42 +331,37 @@ async function mergeVideos() {
     hideOutput();
 
     try {
-        // Write all videos to FFmpeg FS
         for (let i = 0; i < uploadedVideos.length; i++) {
             const data = await fetchFile(uploadedVideos[i].file);
-            await ffmpeg.writeFile(`input${i}.mp4`, data);
+            await ffmpeg.FS('writeFile', `input${i}.mp4`, data);
             progressFill.style.width = `${Math.round(((i + 1) / uploadedVideos.length) * 30)}%`;
         }
 
         progressText.textContent = 'Creating concat list...';
 
-        // Create concat file
         const fileList = uploadedVideos.map((_, i) => `file 'input${i}.mp4'`).join('\n');
-        await ffmpeg.writeFile('filelist.txt', new TextEncoder().encode(fileList));
+        await ffmpeg.FS('writeFile', 'filelist.txt', new TextEncoder().encode(fileList));
 
         progressText.textContent = 'Merging videos...';
 
-        // Use concat demuxer
-        await ffmpeg.exec([
+        await ffmpeg.run(
             '-f', 'concat',
             '-safe', '0',
             '-i', 'filelist.txt',
             '-c', 'copy',
             'merged.mp4'
-        ]);
+        );
 
-        const data = await ffmpeg.readFile('merged.mp4');
+        const data = ffmpeg.FS('readFile', 'merged.mp4');
         const blob = new Blob([data.buffer], { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
 
         showOutput(url, 'merged-video.mp4');
 
-        // Cleanup
         for (let i = 0; i < uploadedVideos.length; i++) {
-            await ffmpeg.deleteFile(`input${i}.mp4`).catch(() => {});
+            ffmpeg.FS('unlink', `input${i}.mp4`);
         }
-        await ffmpeg.deleteFile('filelist.txt').catch(() => {});
-        await ffmpeg.deleteFile('merged.mp4').catch(() => {});
+        ffmpeg.FS('unlink', 'filelist.txt');
 
     } catch (error) {
         console.error('Error:', error);
@@ -411,7 +371,6 @@ async function mergeVideos() {
     hideProgress();
 }
 
-// ====== ADD AUDIO ======
 async function addAudio() {
     const videoFile = document.getElementById('audio-video-upload').files[0];
     const audioFile = document.getElementById('audio-upload').files[0];
@@ -431,8 +390,8 @@ async function addAudio() {
     try {
         progressText.textContent = 'Loading files...';
 
-        await ffmpeg.writeFile('input.mp4', await fetchFile(videoFile));
-        await ffmpeg.writeFile('input.mp3', await fetchFile(audioFile));
+        await ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(videoFile));
+        await ffmpeg.FS('writeFile', 'input.mp3', await fetchFile(audioFile));
 
         progressFill.style.width = '30%';
         progressText.textContent = 'Adding audio...';
@@ -440,7 +399,7 @@ async function addAudio() {
         const replaceAudio = document.getElementById('replace-audio').checked;
 
         if (replaceAudio) {
-            await ffmpeg.exec([
+            await ffmpeg.run(
                 '-i', 'input.mp4',
                 '-i', 'input.mp3',
                 '-c:v', 'copy',
@@ -449,9 +408,9 @@ async function addAudio() {
                 '-map', '1:a:0',
                 '-shortest',
                 'output.mp4'
-            ]);
+            );
         } else {
-            await ffmpeg.exec([
+            await ffmpeg.run(
                 '-i', 'input.mp4',
                 '-i', 'input.mp3',
                 '-c:v', 'copy',
@@ -460,18 +419,17 @@ async function addAudio() {
                 '-map', '0:v',
                 '-map', '[a]',
                 'output.mp4'
-            ]);
+            );
         }
 
-        const data = await ffmpeg.readFile('output.mp4');
+        const data = ffmpeg.FS('readFile', 'output.mp4');
         const blob = new Blob([data.buffer], { type: 'video/mp4' });
         const url = URL.createObjectURL(blob);
 
         showOutput(url, 'video-with-audio.mp4');
 
-        await ffmpeg.deleteFile('input.mp4').catch(() => {});
-        await ffmpeg.deleteFile('input.mp3').catch(() => {});
-        await ffmpeg.deleteFile('output.mp4').catch(() => {});
+        ffmpeg.FS('unlink', 'input.mp4');
+        ffmpeg.FS('unlink', 'input.mp3');
 
     } catch (error) {
         console.error('Error:', error);
@@ -481,7 +439,6 @@ async function addAudio() {
     hideProgress();
 }
 
-// ====== CONVERT FORMAT ======
 async function convertVideo() {
     const file = document.getElementById('convert-upload').files[0];
     if (!file) {
@@ -497,7 +454,7 @@ async function convertVideo() {
         const resolution = document.getElementById('convert-resolution').value;
 
         progressText.textContent = 'Loading video...';
-        await ffmpeg.writeFile('input', await fetchFile(file));
+        await ffmpeg.FS('writeFile', 'input', await fetchFile(file));
 
         progressFill.style.width = '30%';
         progressText.textContent = `Converting to ${format.toUpperCase()}...`;
@@ -523,9 +480,9 @@ async function convertVideo() {
         args.push('-preset', 'ultrafast');
         args.push(`output.${format}`);
 
-        await ffmpeg.exec(args);
+        await ffmpeg.run(...args);
 
-        const data = await ffmpeg.readFile(`output.${format}`);
+        const data = ffmpeg.FS('readFile', `output.${format}`);
         const mimeType = format === 'gif' ? 'image/gif' :
                         format === 'webm' ? 'video/webm' :
                         format === 'avi' ? 'video/avi' :
@@ -536,8 +493,7 @@ async function convertVideo() {
 
         showOutput(url, `converted.${format}`);
 
-        await ffmpeg.deleteFile('input').catch(() => {});
-        await ffmpeg.deleteFile(`output.${format}`).catch(() => {});
+        ffmpeg.FS('unlink', 'input');
 
     } catch (error) {
         console.error('Error:', error);
@@ -547,14 +503,12 @@ async function convertVideo() {
     hideProgress();
 }
 
-// Event Listeners
 document.getElementById('generate-text-video').addEventListener('click', generateTextVideo);
 document.getElementById('generate-slideshow').addEventListener('click', generateSlideshow);
 document.getElementById('merge-videos').addEventListener('click', mergeVideos);
 document.getElementById('add-audio-btn').addEventListener('click', addAudio);
 document.getElementById('convert-video').addEventListener('click', convertVideo);
 
-// Initialize on load
 initFFmpeg().catch(err => {
     console.error('Failed to initialize FFmpeg:', err);
     loadingScreen.innerHTML = `
