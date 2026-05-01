@@ -63,7 +63,6 @@ main {
     display: none !important;
 }
 
-/* Loading Screen */
 .loading-screen {
     text-align: center;
     padding: 100px 20px;
@@ -83,59 +82,68 @@ main {
     to { transform: rotate(360deg); }
 }
 
-/* Tabs */
-.tabs {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 12px;
-}
-
-.tab {
-    padding: 12px 20px;
-    border: none;
-    background: transparent;
-    color: var(--light);
-    cursor: pointer;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    font-size: 0.95rem;
-    flex: 1;
-    min-width: 120px;
-}
-
-.tab:hover {
-    background: rgba(108, 92, 231, 0.2);
-}
-
-.tab.active {
-    background: var(--primary);
-    color: var(--white);
-}
-
-/* Tab Panels */
-.tab-panel {
-    display: none;
+.setup-panel {
     background: rgba(255, 255, 255, 0.05);
     padding: 30px;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
 }
 
-.tab-panel.active {
-    display: block;
-}
-
-.tab-panel h2 {
+.setup-panel h2 {
     color: var(--white);
-    margin-bottom: 25px;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
+    margin-bottom: 15px;
 }
 
-/* Form Elements */
+.setup-desc {
+    color: var(--light);
+    margin-bottom: 25px;
+}
+
+.steps {
+    background: rgba(108, 92, 231, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+.step:last-child {
+    margin-bottom: 0;
+}
+
+.step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: var(--white);
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.step a {
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.step a:hover {
+    text-decoration: underline;
+}
+
 .form-group {
     margin-bottom: 20px;
 }
@@ -147,15 +155,23 @@ main {
     font-weight: 500;
 }
 
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: rgba(223, 230, 233, 0.6);
+}
+
 .form-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 15px;
 }
 
 textarea,
 input[type="text"],
 input[type="number"],
+input[type="password"],
 select {
     width: 100%;
     padding: 12px;
@@ -174,38 +190,11 @@ select:focus {
     border-color: var(--primary);
 }
 
-input[type="color"] {
-    width: 60px;
-    height: 40px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: transparent;
+textarea {
+    resize: vertical;
+    min-height: 100px;
 }
 
-input[type="file"] {
-    padding: 15px;
-    border: 2px dashed rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-input[type="file"]:hover {
-    border-color: var(--primary);
-    background: rgba(108, 92, 231, 0.1);
-}
-
-input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    margin-right: 8px;
-    cursor: pointer;
-}
-
-/* Buttons */
 .btn {
     padding: 14px 30px;
     border: none;
@@ -226,18 +215,279 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
-.btn.primary:hover {
+.btn.primary:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 5px 20px rgba(108, 92, 231, 0.4);
 }
 
 .btn.primary:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
 }
 
-/* Preview Grid */
+.btn.secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.back-btn {
+    width: auto;
+    margin-top: 15px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.feature-card {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.feature-card strong {
+    color: var(--white);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.feature-card p {
+    font-size: 0.85rem;
+    color: rgba(223, 230, 233, 0.7);
+}
+
+/* Progress */
+#progress-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
+}
+
+#progress-section h3 {
+    color: var(--white);
+    margin-bottom: 15px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+    transition: width 0.3s ease;
+    border-radius: 10px;
+}
+
+#progress-text {
+    text-align: center;
+    color: var(--secondary);
+    font-weight: 600;
+}
+
+#progress-stages {
+    margin-top: 15px;
+}
+
+.stage-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    font-size: 0.9rem;
+}
+
+.stage-icon {
+    font-size: 1rem;
+}
+
+.stage-done {
+    color: var(--success);
+}
+
+.stage-active {
+    color: var(--primary);
+}
+
+.stage-waiting {
+    color: rgba(223, 230, 233, 0.4);
+}
+
+#progress-log {
+    font-size: 0.8rem;
+    color: var(--light);
+    margin-top: 10px;
+    font-family: monospace;
+    opacity: 0.7;
+}
+
+/* Frames Preview */
+#frames-preview {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 30px;
+}
+
+#frames-preview h3 {
+    color: var(--white);
+    margin-bottom: 15px;
+}
+
+.frames-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.frame-item {
+    aspect-ratio: 16/9;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+.frame-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.frame-num {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+/* Output Section */
+#output-section {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+#output-section h3 {
+    color: var(--success);
+    margin-bottom: 20px;
+}
+
+#output-video {
+    width: 100%;
+    max-width: 700px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    background: #000;
+}
+
+.output-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.output-actions .btn {
+    width: auto;
+    max-width: 250px;
+}
+
+/* Tools Section */
+#tools-section {
+    margin-top: 30px;
+}
+
+#tools-section h2 {
+    color: var(--white);
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.tool-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.tool-card:hover {
+    background: rgba(108, 92, 231, 0.15);
+    border-color: var(--primary);
+    transform: translateY(-3px);
+}
+
+.tool-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.tool-card h3 {
+    color: var(--white);
+    margin-bottom: 8px;
+}
+
+.tool-card p {
+    font-size: 0.85rem;
+    color: rgba(223, 230, 233, 0.7);
+}
+
+.tool-panel {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 20px;
+}
+
+.tool-panel h2 {
+    color: var(--white);
+    margin-bottom: 20px;
+}
+
 .preview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -277,90 +527,21 @@ input[type="checkbox"] {
     justify-content: center;
 }
 
-/* Info Text */
-.info {
-    color: var(--secondary);
-    font-size: 0.9rem;
-    padding: 12px;
-    background: rgba(0, 206, 201, 0.1);
+input[type="file"] {
+    padding: 15px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-/* Progress Bar */
-#progress-section {
-    margin-top: 30px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-#progress-section h3 {
-    color: var(--white);
-    margin-bottom: 15px;
-}
-
-.progress-bar {
+    cursor: pointer;
     width: 100%;
-    height: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    overflow: hidden;
-    margin-bottom: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
 }
 
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
-    transition: width 0.3s ease;
-    border-radius: 10px;
+input[type="file"]:hover {
+    border-color: var(--primary);
+    background: rgba(108, 92, 231, 0.1);
 }
 
-#progress-text {
-    text-align: center;
-    color: var(--secondary);
-    font-weight: 600;
-}
-
-#progress-log {
-    font-size: 0.85rem;
-    color: var(--light);
-    margin-top: 10px;
-    font-family: monospace;
-    max-height: 100px;
-    overflow-y: auto;
-}
-
-/* Output Section */
-#output-section {
-    margin-top: 30px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 25px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-}
-
-#output-section h3 {
-    color: var(--success);
-    margin-bottom: 20px;
-}
-
-#output-video {
-    width: 100%;
-    max-width: 700px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    background: #000;
-}
-
-#download-btn {
-    max-width: 300px;
-}
-
-/* Footer */
 footer {
     text-align: center;
     padding: 25px;
@@ -370,25 +551,31 @@ footer {
     font-size: 0.9rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     header h1 {
         font-size: 1.8rem;
-    }
-
-    .tabs {
-        flex-direction: column;
-    }
-
-    .tab {
-        width: 100%;
     }
 
     .form-row {
         grid-template-columns: 1fr;
     }
 
-    .tab-panel {
+    .features-grid,
+    .tools-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .setup-panel,
+    .tool-panel {
         padding: 20px;
+    }
+
+    .output-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .output-actions .btn {
+        width: 100%;
     }
 }

@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Video Generator - Create Videos Online</title>
+    <title>AI Video Generator - Free Online Tool</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <div class="container">
-            <h1>🎬 Free Video Generator</h1>
-            <p>Create videos directly in your browser - 100% free, no signup required</p>
+            <h1>🎬 AI Video Generator</h1>
+            <p>Generate stunning videos using AI - 100% free, no signup required</p>
             <p class="branding">Created by Siva Aadhavan Tech Solution</p>
         </div>
     </header>
@@ -18,174 +18,234 @@
     <main class="container">
         <div id="loading-screen" class="loading-screen">
             <div class="spinner"></div>
-            <p>Loading FFmpeg... Please wait...</p>
+            <p>Loading AI Video Generator... Please wait...</p>
         </div>
 
         <div id="app-content" class="hidden">
-            <div class="tabs">
-                <button class="tab active" data-tab="text-video">Text to Video</button>
-                <button class="tab" data-tab="slideshow">Image Slideshow</button>
-                <button class="tab" data-tab="merge">Merge Videos</button>
-                <button class="tab" data-tab="add-audio">Add Audio</button>
-                <button class="tab" data-tab="convert">Convert Format</button>
-            </div>
-
-            <div class="tab-content">
-                <!-- Text to Video Tab -->
-                <div id="text-video" class="tab-panel active">
-                    <h2>Create Video from Text</h2>
-                    <div class="form-group">
-                        <label for="text-content">Enter Text:</label>
-                        <textarea id="text-content" rows="4" placeholder="Enter the text you want to display in the video..."></textarea>
+            <div id="setup-panel" class="setup-panel">
+                <h2>🤖 AI Video Generator</h2>
+                <p class="setup-desc">Enter a Hugging Face token to generate AI videos. Get a FREE token from Hugging Face (takes 30 seconds):</p>
+                
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-num">1</span>
+                        <span>Go to <a href="https://huggingface.co/settings/tokens" target="_blank">huggingface.co/settings/tokens</a></span>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="bg-color">Background Color:</label>
-                            <input type="color" id="bg-color" value="#1a1a2e">
-                        </div>
-                        <div class="form-group">
-                            <label for="text-color">Text Color:</label>
-                            <input type="color" id="text-color" value="#ffffff">
-                        </div>
-                        <div class="form-group">
-                            <label for="video-duration">Duration (seconds):</label>
-                            <input type="number" id="video-duration" value="5" min="1" max="60">
-                        </div>
+                    <div class="step">
+                        <span class="step-num">2</span>
+                        <span>Create a free account and generate a token</span>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="font-size">Font Size:</label>
-                            <input type="number" id="font-size" value="32" min="12" max="72">
-                        </div>
-                        <div class="form-group">
-                            <label for="resolution">Resolution:</label>
-                            <select id="resolution">
-                                <option value="640x360">360p</option>
-                                <option value="1280x720" selected>720p</option>
-                                <option value="1920x1080">1080p</option>
-                            </select>
-                        </div>
+                    <div class="step">
+                        <span class="step-num">3</span>
+                        <span>Paste the token below and start creating AI videos!</span>
                     </div>
-                    <button class="btn primary" id="generate-text-video">Generate Video</button>
                 </div>
 
-                <!-- Image Slideshow Tab -->
-                <div id="slideshow" class="tab-panel">
-                    <h2>Create Slideshow Video</h2>
-                    <div class="form-group">
-                        <label for="image-upload">Upload Images:</label>
-                        <input type="file" id="image-upload" accept="image/*" multiple>
-                        <div id="image-preview" class="preview-grid"></div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="slide-duration">Duration per Slide (seconds):</label>
-                            <input type="number" id="slide-duration" value="3" min="1" max="30">
-                        </div>
-                        <div class="form-group">
-                            <label for="transition-type">Transition:</label>
-                            <select id="transition-type">
-                                <option value="none">None</option>
-                                <option value="fade" selected>Fade</option>
-                                <option value="wipe">Wipe</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="slideshow-resolution">Resolution:</label>
-                            <select id="slideshow-resolution">
-                                <option value="640x360">360p</option>
-                                <option value="1280x720" selected>720p</option>
-                                <option value="1920x1080">1080p</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button class="btn primary" id="generate-slideshow">Create Slideshow</button>
+                <div class="form-group">
+                    <label for="hf-token">Hugging Face Token (Free):</label>
+                    <input type="password" id="hf-token" placeholder="hf_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+                    <small>🔒 Token is stored only in your browser, never sent to any server except Hugging Face API</small>
                 </div>
 
-                <!-- Merge Videos Tab -->
-                <div id="merge" class="tab-panel">
-                    <h2>Merge Videos</h2>
-                    <div class="form-group">
-                        <label for="video-upload">Upload Videos:</label>
-                        <input type="file" id="video-upload" accept="video/*" multiple>
-                        <div id="video-preview" class="preview-grid"></div>
-                    </div>
-                    <p class="info">Videos will be merged in the order they are uploaded. Same format recommended.</p>
-                    <button class="btn primary" id="merge-videos">Merge Videos</button>
+                <div class="form-group">
+                    <label for="video-prompt">Describe your video:</label>
+                    <textarea id="video-prompt" rows="4" placeholder="A beautiful sunset over mountains with clouds moving slowly, cinematic lighting, 4K quality..."></textarea>
                 </div>
 
-                <!-- Add Audio Tab -->
-                <div id="add-audio" class="tab-panel">
-                    <h2>Add Audio to Video</h2>
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="audio-video-upload">Upload Video:</label>
-                        <input type="file" id="audio-video-upload" accept="video/*">
+                        <label for="video-style">Video Style:</label>
+                        <select id="video-style">
+                            <option value="cinematic">Cinematic</option>
+                            <option value="anime">Anime</option>
+                            <option value="realistic">Photorealistic</option>
+                            <option value="fantasy">Fantasy</option>
+                            <option value="3d-render">3D Render</option>
+                            <option value="watercolor">Watercolor Art</option>
+                            <option value="cyberpunk">Cyberpunk</option>
+                            <option value="oil-painting">Oil Painting</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="audio-upload">Upload Audio:</label>
-                        <input type="file" id="audio-upload" accept="audio/*">
+                        <label for="num-frames">AI Frames:</label>
+                        <select id="num-frames">
+                            <option value="8">8 (Fast)</option>
+                            <option value="16" selected>16 (Normal)</option>
+                            <option value="24">24 (Smooth)</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="replace-audio"> Replace existing audio
-                        </label>
+                        <label for="resolution">Resolution:</label>
+                        <select id="resolution">
+                            <option value="512x512">512x512</option>
+                            <option value="768x512" selected>768x512 (Widescreen)</option>
+                            <option value="512x768">512x768 (Portrait)</option>
+                        </select>
                     </div>
-                    <button class="btn primary" id="add-audio-btn">Add Audio</button>
                 </div>
 
-                <!-- Convert Format Tab -->
-                <div id="convert" class="tab-panel">
-                    <h2>Convert Video Format</h2>
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="convert-upload">Upload Video:</label>
-                        <input type="file" id="convert-upload" accept="video/*">
+                        <label for="fps">Frame Rate:</label>
+                        <select id="fps">
+                            <option value="4">4 FPS (Slideshow)</option>
+                            <option value="8" selected>8 FPS (Normal)</option>
+                            <option value="12">12 FPS (Smooth)</option>
+                        </select>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="output-format">Output Format:</label>
-                            <select id="output-format">
-                                <option value="mp4">MP4</option>
-                                <option value="webm">WebM</option>
-                                <option value="avi">AVI</option>
-                                <option value="mov">MOV</option>
-                                <option value="gif">GIF</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="convert-resolution">Resolution:</label>
-                            <select id="convert-resolution">
-                                <option value="original">Original</option>
-                                <option value="640x360">360p</option>
-                                <option value="1280x720">720p</option>
-                                <option value="1920x1080">1080p</option>
-                            </select>
-                        </div>
+                    <div class="form-group">
+                        <label for="ai-model">AI Model:</label>
+                        <select id="ai-model">
+                            <option value="stabilityai/stable-diffusion-2-1">Stable Diffusion 2.1</option>
+                            <option value="runwayml/stable-diffusion-v1-5">Stable Diffusion 1.5</option>
+                            <option value="prompthero/openjourney-v4">OpenJourney v4 (Art)</option>
+                        </select>
                     </div>
-                    <button class="btn primary" id="convert-video">Convert</button>
+                    <div class="form-group">
+                        <label for="transition">Transition:</label>
+                        <select id="transition">
+                            <option value="crossfade">Crossfade</option>
+                            <option value="zoom">Zoom</option>
+                            <option value="pan">Pan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn primary" id="generate-ai-video">🎬 Generate AI Video</button>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🧠</span>
+                        <strong>AI-Powered</strong>
+                        <p>Uses Stable Diffusion to generate unique AI images</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎨</span>
+                        <strong>Multiple Styles</strong>
+                        <p>Cinematic, anime, fantasy, cyberpunk and more</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">💰</span>
+                        <strong>100% Free</strong>
+                        <p>Hugging Face free tier, no credit card needed</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🔒</span>
+                        <strong>Private</strong>
+                        <p>All processing in your browser, token never leaves</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Progress Section -->
             <div id="progress-section" class="hidden">
-                <h3>Processing...</h3>
+                <h3 id="progress-title">Generating AI Video...</h3>
                 <div class="progress-bar">
                     <div id="progress-fill" class="progress-fill"></div>
                 </div>
                 <p id="progress-text">0%</p>
+                <div id="progress-stages"></div>
                 <p id="progress-log"></p>
+            </div>
+
+            <!-- Generated Frames Preview -->
+            <div id="frames-preview" class="hidden">
+                <h3>AI Generated Frames</h3>
+                <div id="frames-grid" class="frames-grid"></div>
             </div>
 
             <!-- Output Section -->
             <div id="output-section" class="hidden">
-                <h3>✅ Video Ready!</h3>
+                <h3>🎉 Your AI Video is Ready!</h3>
                 <video id="output-video" controls></video>
-                <a id="download-btn" class="btn primary" download>Download Video</a>
+                <div class="output-actions">
+                    <a id="download-btn" class="btn primary" download>📥 Download Video</a>
+                    <button class="btn secondary" id="new-video-btn">🎬 Create Another</button>
+                </div>
+            </div>
+
+            <!-- Other Tools Section -->
+            <div id="tools-section">
+                <h2>🛠️ More Free Tools</h2>
+                <div class="tools-grid">
+                    <div class="tool-card" onclick="switchToTool('slideshow')">
+                        <span class="tool-icon">🖼️</span>
+                        <h3>Image Slideshow</h3>
+                        <p>Convert your images into a video</p>
+                    </div>
+                    <div class="tool-card" onclick="switchToTool('merge')">
+                        <span class="tool-icon">🎞️</span>
+                        <h3>Merge Videos</h3>
+                        <p>Combine multiple videos into one</p>
+                    </div>
+                    <div class="tool-card" onclick="switchToTool('convert')">
+                        <span class="tool-icon">🔄</span>
+                        <h3>Convert Format</h3>
+                        <p>Convert between video formats</p>
+                    </div>
+                </div>
+
+                <!-- Additional Tool Panels -->
+                <div id="tool-slideshow" class="tool-panel hidden">
+                    <h2>🖼️ Image Slideshow</h2>
+                    <div class="form-group">
+                        <label>Upload Images:</label>
+                        <input type="file" id="slideshow-upload" accept="image/*" multiple>
+                        <div id="slideshow-preview" class="preview-grid"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Duration per Slide:</label>
+                            <input type="number" id="slide-dur" value="2" min="1" max="10">
+                        </div>
+                        <div class="form-group">
+                            <label>Transition:</label>
+                            <select id="slide-trans">
+                                <option value="crossfade">Crossfade</option>
+                                <option value="none">None</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn primary" id="create-slideshow-btn">Create Slideshow</button>
+                    <button class="btn secondary back-btn" onclick="hideTools()">← Back</button>
+                </div>
+
+                <div id="tool-merge" class="tool-panel hidden">
+                    <h2>🎞️ Merge Videos</h2>
+                    <div class="form-group">
+                        <label>Upload Videos:</label>
+                        <input type="file" id="merge-upload" accept="video/*" multiple>
+                        <div id="merge-preview" class="preview-grid"></div>
+                    </div>
+                    <button class="btn primary" id="merge-btn">Merge Videos</button>
+                    <button class="btn secondary back-btn" onclick="hideTools()">← Back</button>
+                </div>
+
+                <div id="tool-convert" class="tool-panel hidden">
+                    <h2>🔄 Convert Format</h2>
+                    <div class="form-group">
+                        <label>Upload Video:</label>
+                        <input type="file" id="convert-upload" accept="video/*">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Output Format:</label>
+                            <select id="conv-format">
+                                <option value="mp4">MP4</option>
+                                <option value="webm">WebM</option>
+                                <option value="gif">GIF</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn primary" id="convert-btn">Convert</button>
+                    <button class="btn secondary back-btn" onclick="hideTools()">← Back</button>
+                </div>
             </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2026 Siva Aadhavan Tech Solution | Powered by FFmpeg.wasm | 100% Free & Open Source</p>
+        <p>&copy; 2026 Siva Aadhavan Tech Solution | Powered by Hugging Face AI & FFmpeg.wasm</p>
     </footer>
 
     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
