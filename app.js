@@ -110,33 +110,28 @@ const stylePrompts = {
 const negativePrompt = 'blurry, low quality, distorted, ugly, deformed, text, watermark, signature, extra limbs';
 
 async function generateAIImage(prompt, width, height, model, token) {
-    const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-    
-    const response = await fetch(proxyUrl, {
+    const apiUrl = `/api/generate`;
+    const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'x-wait-for-model': 'true'
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            inputs: prompt,
-            parameters: {
-                negative_prompt: negativePrompt,
-                width: width,
-                height: height,
-                num_inference_steps: 20,
-                guidance_scale: 7.5
-            }
+            token: token,
+            model: model || 'stabilityai/stable-diffusion-2-1',
+            prompt: prompt,
+            negativePrompt: negativePrompt,
+            width: width,
+            height: height,
+            steps: 20,
+            guidanceScale: 7.5
         })
     });
 
     if (response.status === 503) {
         const data = await response.json();
-        const waitTime = data.estimated_time || 20;
-        log(`Model loading, waiting ${Math.ceil(waitTime)}s...`);
-        await new Promise(r => setTimeout(r, waitTime * 1000));
+        log('Model loading, retrying...');
+        await new Promise(r => setTimeout(r, 20000));
         return generateAIImage(prompt, width, height, model, token);
     }
 
