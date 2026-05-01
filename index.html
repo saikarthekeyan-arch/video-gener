@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Video Generator - Create Videos Online</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🎬 Free Video Generator</h1>
+            <p>Create videos directly in your browser - 100% free, no signup required</p>
+            <p class="branding">Created by Siva Aadhavan Tech Solution</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="loading-screen" class="loading-screen">
+            <div class="spinner"></div>
+            <p>Loading FFmpeg... Please wait...</p>
+        </div>
+
+        <div id="app-content" class="hidden">
+            <div class="tabs">
+                <button class="tab active" data-tab="text-video">Text to Video</button>
+                <button class="tab" data-tab="slideshow">Image Slideshow</button>
+                <button class="tab" data-tab="merge">Merge Videos</button>
+                <button class="tab" data-tab="add-audio">Add Audio</button>
+                <button class="tab" data-tab="convert">Convert Format</button>
+            </div>
+
+            <div class="tab-content">
+                <!-- Text to Video Tab -->
+                <div id="text-video" class="tab-panel active">
+                    <h2>Create Video from Text</h2>
+                    <div class="form-group">
+                        <label for="text-content">Enter Text:</label>
+                        <textarea id="text-content" rows="4" placeholder="Enter the text you want to display in the video..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bg-color">Background Color:</label>
+                            <input type="color" id="bg-color" value="#1a1a2e">
+                        </div>
+                        <div class="form-group">
+                            <label for="text-color">Text Color:</label>
+                            <input type="color" id="text-color" value="#ffffff">
+                        </div>
+                        <div class="form-group">
+                            <label for="video-duration">Duration (seconds):</label>
+                            <input type="number" id="video-duration" value="5" min="1" max="60">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="font-size">Font Size:</label>
+                            <input type="number" id="font-size" value="32" min="12" max="72">
+                        </div>
+                        <div class="form-group">
+                            <label for="resolution">Resolution:</label>
+                            <select id="resolution">
+                                <option value="640x360">360p</option>
+                                <option value="1280x720" selected>720p</option>
+                                <option value="1920x1080">1080p</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn primary" id="generate-text-video">Generate Video</button>
+                </div>
+
+                <!-- Image Slideshow Tab -->
+                <div id="slideshow" class="tab-panel">
+                    <h2>Create Slideshow Video</h2>
+                    <div class="form-group">
+                        <label for="image-upload">Upload Images:</label>
+                        <input type="file" id="image-upload" accept="image/*" multiple>
+                        <div id="image-preview" class="preview-grid"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="slide-duration">Duration per Slide (seconds):</label>
+                            <input type="number" id="slide-duration" value="3" min="1" max="30">
+                        </div>
+                        <div class="form-group">
+                            <label for="transition-type">Transition:</label>
+                            <select id="transition-type">
+                                <option value="none">None</option>
+                                <option value="fade" selected>Fade</option>
+                                <option value="wipe">Wipe</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="slideshow-resolution">Resolution:</label>
+                            <select id="slideshow-resolution">
+                                <option value="640x360">360p</option>
+                                <option value="1280x720" selected>720p</option>
+                                <option value="1920x1080">1080p</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn primary" id="generate-slideshow">Create Slideshow</button>
+                </div>
+
+                <!-- Merge Videos Tab -->
+                <div id="merge" class="tab-panel">
+                    <h2>Merge Videos</h2>
+                    <div class="form-group">
+                        <label for="video-upload">Upload Videos:</label>
+                        <input type="file" id="video-upload" accept="video/*" multiple>
+                        <div id="video-preview" class="preview-grid"></div>
+                    </div>
+                    <p class="info">Videos will be merged in the order they are uploaded. Same format recommended.</p>
+                    <button class="btn primary" id="merge-videos">Merge Videos</button>
+                </div>
+
+                <!-- Add Audio Tab -->
+                <div id="add-audio" class="tab-panel">
+                    <h2>Add Audio to Video</h2>
+                    <div class="form-group">
+                        <label for="audio-video-upload">Upload Video:</label>
+                        <input type="file" id="audio-video-upload" accept="video/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="audio-upload">Upload Audio:</label>
+                        <input type="file" id="audio-upload" accept="audio/*">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="replace-audio"> Replace existing audio
+                        </label>
+                    </div>
+                    <button class="btn primary" id="add-audio-btn">Add Audio</button>
+                </div>
+
+                <!-- Convert Format Tab -->
+                <div id="convert" class="tab-panel">
+                    <h2>Convert Video Format</h2>
+                    <div class="form-group">
+                        <label for="convert-upload">Upload Video:</label>
+                        <input type="file" id="convert-upload" accept="video/*">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="output-format">Output Format:</label>
+                            <select id="output-format">
+                                <option value="mp4">MP4</option>
+                                <option value="webm">WebM</option>
+                                <option value="avi">AVI</option>
+                                <option value="mov">MOV</option>
+                                <option value="gif">GIF</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="convert-resolution">Resolution:</label>
+                            <select id="convert-resolution">
+                                <option value="original">Original</option>
+                                <option value="640x360">360p</option>
+                                <option value="1280x720">720p</option>
+                                <option value="1920x1080">1080p</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn primary" id="convert-video">Convert</button>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div id="progress-section" class="hidden">
+                <h3>Processing...</h3>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <p id="progress-text">0%</p>
+                <p id="progress-log"></p>
+            </div>
+
+            <!-- Output Section -->
+            <div id="output-section" class="hidden">
+                <h3>✅ Video Ready!</h3>
+                <video id="output-video" controls></video>
+                <a id="download-btn" class="btn primary" download>Download Video</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Siva Aadhavan Tech Solution | Powered by FFmpeg.wasm | 100% Free & Open Source</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/util.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
