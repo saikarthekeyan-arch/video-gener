@@ -110,8 +110,10 @@ const stylePrompts = {
 const negativePrompt = 'blurry, low quality, distorted, ugly, deformed, text, watermark, signature, extra limbs';
 
 async function generateAIImage(prompt, width, height, model, token) {
-    const url = `https://api-inference.huggingface.co/models/${model}`;
-    const response = await fetch(url, {
+    const apiUrl = `https://api-inference.huggingface.co/models/${model}`;
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+    
+    const response = await fetch(proxyUrl, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
